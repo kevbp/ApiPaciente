@@ -34,6 +34,7 @@ public class Servicio {
             existing.setTal(pac.getTal());
             existing.setEda(pac.getEda());
             existing.setEst(pac.getEst());
+            existing.setIdEmp(pac.getIdEmp());
             return repo.save(existing);
         }).orElse(null);
     }
