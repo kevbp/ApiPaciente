@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <title th:text="${modo == 'crear'} ? 'Nuevo Paciente' : 'Editar Paciente'">Paciente</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
+            :root{
+                --bg:#0b1020;            /* fondo oscuro para buen contraste */
+                --card:#11182b;          /* tarjeta */
+                --muted:#9fb0ff;         /* texto secundario */
+                --text:#e9edff;          /* texto principal */
+                --accent:#4f7cff;        /* acento (azul vibrante) */
+                --accent-2:#22c55e;      /* acento positivo */
+                --danger:#ef4444;
+                --border:#213052;
+                --ring: 0 0 0 3px rgba(79,124,255,.35);
+                --radius:14px;
+                --shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+            }
+            @media (prefers-color-scheme: light){
+                :root{
+                    --bg:#f3f6ff;
+                    --card:#ffffff;
+                    --muted:#54609e;
+                    --text:#0d1330;
+                    --accent:#3b6cff;
+                    --accent-2:#16a34a;
+                    --danger:#dc2626;
+                    --border:#e4e7f5;
+                    --ring: 0 0 0 3px rgba(59,108,255,.25);
+                    --shadow: 0 10px 24px rgba(25,38,84,.12);
+                }
+            }
+
+            *{
+                box-sizing:border-box
+            }
+            html,body{
+                height:100%
+            }
+            body{
+                margin:0;
+                font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+                background: radial-gradient(1200px 800px at 15% -10%, rgba(79,124,255,.25), transparent 40%),
+                    radial-gradient(900px 700px at 120% 20%, rgba(34,197,94,.18), transparent 35%),
+                    var(--bg);
+                color:var(--text);
+                padding:24px;
+            }
+
+            .wrap{
+                max-width: 900px;
+                margin: 0 auto;
+            }
+
+            /* Top bar */
+            .topbar{
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                margin-bottom:16px;
+            }
+            .crumbs{
+                display:flex;
+                gap:10px;
+                align-items:center;
+                color:var(--muted);
+                font-size:14px;
+            }
+            .crumbs a{
+                color:var(--muted);
+                text-decoration:none
+            }
+            .crumbs a:hover{
+                color:var(--text)
+            }
+            .badge{
+                font-size:12px;
+                border:1px solid var(--border);
+                padding:6px 10px;
+                border-radius:999px;
+                color:var(--muted);
+            }
+
+            /* Card */
+            .card{
+                background:var(--card);
+                border:1px solid var(--border);
+                border-radius:var(--radius);
+                box-shadow:var(--shadow);
+                overflow:hidden;
+            }
+            .card__header{
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                padding:18px 22px;
+                border-bottom:1px solid var(--border);
+                background:linear-gradient(180deg, rgba(255,255,255,.04), transparent);
+            }
+            .card__title{
+                display:flex;
+                gap:10px;
+                align-items:center;
+                font-weight:700;
+                font-size:20px;
+            }
+            .pill{
+                font-size:12px;
+                padding:4px 10px;
+                border-radius:999px;
+                background:rgba(79,124,255,.12);
+                color:var(--accent);
+                border:1px solid rgba(79,124,255,.25);
+            }
+
+            .card__content{
+                padding:24px
+            }
+
+            /* Form */
+            form{
+                width:100%
+            }
+            .grid{
+                display:grid;
+                gap:18px;
+                grid-template-columns: repeat(12, 1fr);
+            }
+            .col-6{
+                grid-column: span 6
+            }
+            .col-12{
+                grid-column: span 12
+            }
+            @media (max-width: 720px){
+                .col-6{
+                    grid-column: span 12
+                }
+            }
+
+            .field{
+                display:flex;
+                flex-direction:column;
+                gap:8px
+            }
+            .label{
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                font-size:13px;
+                color:var(--muted);
+            }
+            .hint{
+                font-size:12px;
+                color:var(--muted)
+            }
+
+            .input,.select{
+                width:100%;
+                background: rgba(255,255,255,.04);
+                color:var(--text);
+                border:1px solid var(--border);
+                border-radius:10px;
+                padding:12px 14px;
+                outline: none;
+                transition: box-shadow .15s ease, border-color .15s ease, transform .05s ease;
+            }
+            .input:focus,.select:focus{
+                border-color: var(--accent);
+                box-shadow: var(--ring);
+            }
+            .input:hover,.select:hover{
+                transform: translateY(-1px)
+            }
+            input[type=number]::-webkit-outer-spin-button,
+            input[type=number]::-webkit-inner-spin-button{
+                -webkit-appearance: none;
+                margin: 0;
+            }
+            input[type=number]{
+                -moz-appearance: textfield;
+            }
+
+            .error{
+                color:var(--danger);
+                font-size:12px
+            }
+            .divider{
+                height:1px;
+                background:var(--border);
+                margin:8px 0 16px
+            }
+
+            .actions{
+                display:flex;
+                gap:12px;
+                justify-content:flex-end;
+                align-items:center;
+                margin-top:8px
+            }
+            .btn{
+                appearance:none;
+                border:none;
+                cursor:pointer;
+                padding:12px 16px;
+                border-radius:12px;
+                font-weight:600;
+                transition: transform .05s ease, filter .2s ease, box-shadow .2s ease;
+                text-decoration:none;
+                display:inline-flex;
+                align-items:center;
+                gap:8px;
+            }
+            .btn:active{
+                transform: translateY(1px)
+            }
+            .btn-primary{
+                background:linear-gradient(180deg, var(--accent), #355de8);
+                color:#fff;
+                box-shadow: 0 8px 20px rgba(79,124,255,.35);
+            }
+            .btn-primary:hover{
+                filter: brightness(1.05)
+            }
+            .btn-secondary{
+                background:transparent;
+                color:var(--text);
+                border:1px solid var(--border);
+            }
+            .btn-secondary:hover{
+                border-color: var(--accent);
+                color:#fff
+            }
+
+            .toolbar{
+                display:flex;
+                gap:10px;
+                align-items:center;
+            }
+            .kbd{
+                font: 12px/1 ui-monospace, SFMono-Regular, Menlo, Consolas;
+                background: rgba(255,255,255,.06);
+                border:1px solid var(--border);
+                border-bottom-width:2px;
+                padding:4px 6px;
+                border-radius:8px;
+                color:var(--muted)
+            }
+            .success{
+                color:var(--accent-2);
+                background:rgba(34,197,94,.08);
+                border:1px solid rgba(34,197,94,.25);
+                padding:4px 8px;
+                border-radius:999px;
+                font-size:12px
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="wrap">
+            <!-- Migas + estado -->
+            <div class="topbar">
+                <div class="crumbs">
+                    <a href="/pacientes">Pacientes</a>
+                    <span>›</span>
+                    <span th:text="${modo == 'crear'} ? 'Nuevo' : 'Editar'">Nuevo</span>
+                </div>
+                <span class="badge" th:text="${modo == 'crear'} ? 'Formulario de alta' : 'Edición de registro'">Formulario</span>
+            </div>
+
+            <div class="card">
+                <div class="card__header">
+                    <div class="card__title">
+                        <span>🩺</span>
+                        <span th:text="${modo == 'crear'} ? 'Nuevo Paciente' : 'Editar Paciente'">Paciente</span>
+                        <span class="pill" th:text="${modo}">crear</span>
+                    </div>
+                    <div class="toolbar">
+                        <span class="kbd">Tab</span><span class="muted">para navegar</span>
+                    </div>
+                </div>
+
+                <div class="card__content">
+                    <form th:action="${modo == 'crear'} ? @{/pacientes} : @{/pacientes/{id}(id=${paciente.id})}"
+                          method="post" th:object="${paciente}">
+                        <input type="hidden" name="_method" th:value="${modo == 'editar'} ? 'put' : ''"/>
+
+                        <div class="grid">
+                            <div class="field col-6">
+                                <div class="label"><label for="dni">DNI</label><span class="hint">8 dígitos</span></div>
+                                <input id="dni" class="input"
+                                       th:field="*{dni}"
+                                       type="text"
+                                       inputmode="numeric"
+                                       maxlength="8"
+                                       pattern="\d{8}"
+                                       placeholder="12345678"
+                                       required
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);" />
+
+                                <div class="error" th:if="${#fields.hasErrors('dni')}" th:errors="*{dni}"></div>
+                            </div>
+
+                            <div class="field col-12">
+                                <div class="label"><label for="nom">Nombre</label></div>
+                                <input id="nom" class="input" th:field="*{nom}" placeholder="Nombre completo" required />
+                            </div>
+
+                            <div class="field col-12">
+                                <div class="label"><label for="estado">Estado</label></div>
+                                <select id="estado" class="select" th:field="*{estado}" required>
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="Activo">Activo</option>
+                                    <option value="Inactivo">Inactivo</option>
+                                </select>
+                                <div class="error" th:if="${#fields.hasErrors('estado')}" th:errors="*{estado}"></div>
+                            </div>
+
+                            <!-- Nuevos Campos: Peso, Talla y Edad -->
+                            <div class="field col-6">
+                                <div class="label"><label for="pes">Peso</label><span class="hint">Ej. 70.5</span></div>
+                                <input id="pes" class="input" th:field="*{pes}" type="number" step="0.1" min="0" placeholder="Peso en kg" required />
+                            </div>
+
+                            <div class="field col-6">
+                                <div class="label"><label for="talla">Talla</label><span class="hint">Ej. 1.75</span></div>
+                                <input id="talla" class="input" th:field="*{talla}" type="number" step="0.01" min="0" placeholder="Talla en metros" required />
+                            </div>
+
+                            <div class="field col-6">
+                                <div class="label"><label for="edad">Edad</label><span class="hint">Ej. 30</span></div>
+                                <input id="edad" class="input" th:field="*{edad}" type="number" min="0" placeholder="Edad en años" required />
+                            </div>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <div class="actions">
+                            <a class="btn btn-secondary" href="/pacientes">← Cancelar</a>
+                            <button class="btn btn-primary" type="submit" th:text="${modo == 'crear'} ? 'Crear paciente' : 'Guardar cambios'">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <p style="margin-top:14px;color:var(--muted);font-size:13px">
+                Consejito: usa <span class="kbd">Ctrl</span> + <span class="kbd">S</span> para guardar en el editor y recargar.
+            </p>
+        </div>
+    </body>
+</html>

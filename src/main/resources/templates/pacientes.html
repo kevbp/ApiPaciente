@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Gestión de Pacientes</title>
+        <style>
+            /* ======== Estilo global ======== */
+            body {
+                font-family: "Inter", Arial, Helvetica, sans-serif;
+                background: linear-gradient(135deg, #f0f4ff, #e6ecff);
+                margin: 0;
+                padding: 30px;
+                color: #1f2937;
+            }
+
+            /* ======== Título ======== */
+            h1 {
+                text-align: center;
+                color: #1e3a8a;
+                margin-bottom: 30px;
+                font-size: 28px;
+                font-weight: 700;
+            }
+
+            /* ======== Contenedor ======== */
+            .container {
+                max-width: 1000px;
+                margin: auto;
+                background: #ffffff;
+                padding: 25px 30px;
+                border-radius: 12px;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+                transition: transform 0.3s ease;
+            }
+            .container:hover {
+                transform: translateY(-3px);
+            }
+
+            /* ======== Barra de acciones ======== */
+            .actions {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+
+            /* Botón principal (Agregar paciente) */
+            .actions a {
+                background-color: #2563eb;
+                color: white;
+                padding: 10px 14px;
+                border-radius: 6px;
+                text-decoration: none;
+                font-size: 14px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                box-shadow: 0 3px 6px rgba(37, 99, 235, 0.25);
+            }
+            .actions a:hover {
+                background-color: #1e40af;
+                box-shadow: 0 5px 12px rgba(30, 64, 175, 0.35);
+                transform: translateY(-1px);
+            }
+
+            /* ======== Buscador ======== */
+            .search-form {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .search-form input {
+                flex: 1;
+                padding: 10px;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                outline: none;
+                font-size: 14px;
+                transition: all 0.3s ease;
+            }
+            .search-form input:focus {
+                border-color: #2563eb;
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+            }
+
+            .search-form button,
+            .search-form a {
+                background-color: #2563eb;
+                color: white;
+                padding: 10px 14px;
+                border: none;
+                border-radius: 6px;
+                text-decoration: none;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                box-shadow: 0 3px 6px rgba(37, 99, 235, 0.25);
+            }
+
+            .search-form button:hover,
+            .search-form a:hover {
+                background-color: #1e40af;
+                box-shadow: 0 5px 12px rgba(30, 64, 175, 0.35);
+                transform: translateY(-1px);
+            }
+
+            /* ======== Tabla ======== */
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                text-align: center;
+                font-size: 14px;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            thead {
+                background-color: #1e3a8a;
+                color: white;
+            }
+
+            th,
+            td {
+                padding: 12px 10px;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            tbody tr:hover {
+                background-color: #f8fafc;
+                transition: background-color 0.2s;
+            }
+
+            /* ======== Acciones dentro de la tabla ======== */
+            td a,
+            td button {
+                margin: 0 4px;
+                display: inline-block;
+            }
+
+            td a {
+                color: #2563eb;
+                text-decoration: none;
+                font-weight: 500;
+                transition: color 0.2s;
+            }
+            td a:hover {
+                color: #1e40af;
+                text-decoration: underline;
+            }
+
+            td form button {
+                background-color: #dc2626;
+                color: white;
+                border: none;
+                padding: 6px 9px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+            }
+            td form button:hover {
+                background-color: #b91c1c;
+                box-shadow: 0 3px 10px rgba(185, 28, 28, 0.35);
+            }
+
+            /* ======== No resultados ======== */
+            .no-results {
+                text-align: center;
+                color: #6b7280;
+                padding: 20px 0;
+                font-style: italic;
+            }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gestión de Pacientes</h1>
+
+        <div class="actions">
+            <a href="/pacientes/nuevo">➕ Agregar paciente</a>
+
+            <form class="search-form" th:action="@{/pacientes/buscar}" method="get">
+                <input type="text" name="dato" placeholder="Buscar por ID, nombre o estado" required>
+                <button type="submit">🔍 Buscar</button>
+                <a href="/pacientes">Mostrar todos</a>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>DNI</th>
+                    <th>Estado</th>
+                    <th>Peso</th> <!-- Nueva columna: Peso -->
+                    <th>Talla</th> <!-- Nueva columna: Talla -->
+                    <th>Edad</th>  <!-- Nueva columna: Edad -->
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="p : ${pacientes}">
+                    <td th:text="${p.id}"></td>
+                    <td th:text="${p.nom}"></td>
+                    <td th:text="${p.dni}"></td>
+                    <td th:text="${p.estado}"></td>
+                    <td th:text="${p.pes}"></td> <!-- Mostrar Peso -->
+                    <td th:text="${p.talla}"></td> <!-- Mostrar Talla -->
+                    <td th:text="${p.edad}"></td>  <!-- Mostrar Edad -->
+                    <td>
+                        <a th:href="@{/pacientes/{id}/editar(id=${p.id})}">✏️ Editar</a>
+                        <form th:action="@{/pacientes/{id}/eliminar(id=${p.id})}" method="post" style="display:inline">
+                            <button type="submit">🗑️ Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(pacientes)}">
+                    <td colspan="8" class="no-results">No se encontraron pacientes.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+
